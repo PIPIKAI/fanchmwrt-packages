@@ -1,28 +1,32 @@
 <%+header%>
 <link rel="stylesheet" href="<%=resource%>/css/common.css">
 <script type="text/javascript" src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/common.js"></script>
 
-<div class="cbi-section cbi-tblsection">
-	<div style="max-width: 1000px; margin-left: 10px; padding: 5px;">
-		<div class="form-group">
-			<label for="rec-enable"><%:Enable%></label>
-			<label class="switch">
-				<input type="checkbox" id="rec-enable" name="rec-enable" />
-				<span class="slider"></span>
-			</label>
+<div class="fwx-form-card">
+	<div class="form-title"><%:Base Setting%></div>
+	<div class="form-desc"><%:Internet record basic settings%></div>
+
+	<div class="form-row">
+		<label class="form-label" for="rec-enable"><%:Enable%></label>
+		<label class="switch">
+			<input type="checkbox" id="rec-enable" name="rec-enable" />
+			<span class="slider"></span>
+		</label>
+	</div>
+
+	<div class="form-row" id="data-size-group" style="display: none;">
+		<label class="form-label"><%:History Data Usage%></label>
+		<div class="data-size-field">
+			<span id="data-size-display"></span>
+			<button type="button" class="btn btn-secondary data-clean-btn" onclick="cleanAllData()"><%:Clean%></button>
 		</div>
+	</div>
 
-		<div class="form-group" id="data-size-group" style="display: none;">
-			<label><%:History Data Usage%></label>
-			<div style="display: flex; align-items: center; gap: 10px;">
-				<span id="data-size-display"></span>
-				<button type="button" class="submit-button" onclick="cleanAllData()" style="font-size: 12px; margin: 0; vertical-align: middle;"><%:Clean%></button>
-			</div>
-		</div>
-
-		<div class="form-group">
-			<label for="rec-keep"><%:Record Time%></label>
-			<select id="rec-keep" name="rec-keep" style="width: 200px;">
+	<div class="form-row">
+		<label class="form-label" for="rec-keep"><%:Record Time%></label>
+		<div style="flex:1;">
+			<select id="rec-keep" name="rec-keep">
 				<option value="1">1 <%:days%></option>
 				<option value="2">2 <%:days%></option>
 				<option value="3">3 <%:days%></option>
@@ -34,15 +38,14 @@
 				<option value="15">15 <%:days%></option>
 				<option value="30">30 <%:days%></option>
 			</select>
+			<div class="form-desc-inline"><%:Internet record retention time%></div>
 		</div>
+	</div>
 
-		<div class="desc">
-			<span><%:Internet record retention time%></span>
-		</div>
-
-		<div class="form-group">
-			<label for="rec-valid"><%:App Valid Time%></label>
-			<select id="rec-valid" name="rec-valid" style="width: 200px;">
+	<div class="form-row">
+		<label class="form-label" for="rec-valid"><%:App Valid Time%></label>
+		<div style="flex:1;">
+			<select id="rec-valid" name="rec-valid">
 				<option value="1">1 <%:minutes%></option>
 				<option value="2">2 <%:minutes%></option>
 				<option value="3">3 <%:minutes%></option>
@@ -54,67 +57,61 @@
 				<option value="30">30 <%:minutes%></option>
 				<option value="60">60 <%:minutes%></option>
 			</select>
-		</div>
-
-		<div class="desc">
-			<span><%:App records minimum duration%></span>
-		</div>
-
-		<div class="form-group">
-			<label for="rec-history-size"><%:History Data Size%></label>
-			<input type="text" id="rec-history-size" name="rec-history-size" style="width: 200px;" />
-			<span style="margin-left: 10px;">MB</span>
-		</div>
-
-		<div class="desc">
-			<span><%:History data size limit (1-1024MB)%></span>
-		</div>
-
-		<div class="form-group">
-			<label for="rec-history-path"><%:History Data Path%></label>
-			<input type="text" id="rec-history-path" name="rec-history-path" style="width: 200px;" />
-		</div>
-
-		<div class="desc">
-			<span><%:History data storage directory (cannot be empty or /, max length 64)%></span>
-		</div>
-
-		<div class="button-container" style="margin-top: 20px;">
-			<button type="button" class="submit-button" onclick="submitHandle()"><%:Save%></button>
+			<div class="form-desc-inline"><%:App records minimum duration%></div>
 		</div>
 	</div>
+
+	<div class="form-row">
+		<label class="form-label" for="rec-history-size"><%:History Data Size%></label>
+		<div style="flex:1;">
+			<div class="size-field">
+				<input type="text" id="rec-history-size" name="rec-history-size" />
+				<span class="unit">MB</span>
+			</div>
+			<div class="form-desc-inline"><%:History data size limit%></div>
+		</div>
+	</div>
+
+	<div class="form-row">
+		<label class="form-label" for="rec-history-path"><%:History Data Path%></label>
+		<div style="flex:1;">
+			<input type="text" id="rec-history-path" name="rec-history-path" />
+			<div class="form-desc-inline"><%:User's App record data will be stored in this directory.%></div>
+		</div>
+	</div>
+
+	<div class="form-row" style="justify-content:flex-end; gap:8px;">
+		<button class="btn btn-secondary" type="button" id="record-refresh"><%:Refresh%></button>
+		<button class="btn" type="button" onclick="submitHandle()"><%:Save%></button>
+	</div>
+	<div class="status-tip" id="record-tip"></div>
 </div>
 
 <style>
-.desc {
-	margin-top: 10px;
-	width: 650px;
-}
-.desc span {
-	margin-top: 5px;
-	font-size: 13px;
-	color: rgb(129, 129, 129);
-}
-.form-group {
-	margin-top: 15px;
+.data-size-field {
 	display: flex;
 	align-items: center;
-}
-.form-group > label:first-of-type {
-	margin-right: 10px;
-	width: 150px;
-}
-.form-group input[type="text"] {
-	padding: 5px;
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	border-radius: 3px;
+	gap: 10px;
 }
 
-#data-size-group .submit-button {
-	width: auto !important;
-	min-width: 50px !important;
-	max-width: 70px !important;
-	padding: 4px 6px !important;
+.data-clean-btn {
+	min-width: 64px;
+}
+
+.form-desc-inline {
+	margin-top: 4px;
+	font-size: 12px;
+	color: #9ca3af;
+}
+
+.size-field {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.size-field .unit {
+	color: var(--text-color-medium, #999);
 }
 
 </style>
@@ -126,12 +123,19 @@
 </div>
 
 <script>
+var _Loading = '<%:Loading...%>';
+var _LoadFailed = '<%:Load failed%>';
+
 function showModalTip(msg, ok) {
+	if (typeof showCommonModal === 'function') {
+		showCommonModal(msg || '', 2000, ok ? 'success' : 'error');
+		return;
+	}
 	var $modal = $('#modal');
 	var $msg = $('#modal-msg');
 	if (!$modal.length || !$msg.length) return;
 	$msg.text(msg || '');
-	$msg.css('color', ok ? '#0abf5b' : '#f87171');
+	$msg.css('color', '');
 	$modal.css('display', 'flex');
 	setTimeout(function() {
 		$modal.css('display', 'none');
@@ -139,7 +143,8 @@ function showModalTip(msg, ok) {
 }
 
 function loadConfig() {
-	$.get('<%=url("admin/internet_record/get_record_base")%>', function(resp) {
+	$('#record-tip').text(_Loading);
+	$.getJSON('<%=url("admin/internet_record/get_record_base")%>', function(resp) {
 		if (resp && resp.data) {
 			$('#rec-enable').prop('checked', resp.data.enable == 1);
 			$('#rec-keep').val(resp.data.record_time || 0);
@@ -166,7 +171,12 @@ function loadConfig() {
 			} else {
 				$('#data-size-group').hide();
 			}
+			$('#record-tip').text('');
+		} else {
+			$('#record-tip').text(_LoadFailed);
 		}
+	}).fail(function() {
+		$('#record-tip').text(_LoadFailed);
 	});
 }
 
@@ -239,6 +249,7 @@ function cleanAllData() {
 }
 
 $(function() {
+	$('#record-refresh').on('click', loadConfig);
 	loadConfig();
 });
 </script>

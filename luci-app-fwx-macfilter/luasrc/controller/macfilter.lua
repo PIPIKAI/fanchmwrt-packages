@@ -440,8 +440,8 @@ function set_mac_filter_adv()
 	
 	if resp_obj and resp_obj.code == 2000 then
 		llog("Set macfilter enable: " .. enable)
-		luci.http.write_json({code = 0, message = "Settings saved successfully"})
+		luci.http.write_json({code = 0, message = "Saved successfully"})
 	else
-		luci.http.write_json({code = 1, message = "Failed to save settings"})
+		luci.http.write_json({code = 1, message = "Failed to save"})
 	end
 end

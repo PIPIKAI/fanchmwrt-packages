@@ -191,10 +191,10 @@ msgstr "确定"
 msgid "Enable MAC Filter"
 msgstr "启用上网控制"
 
-msgid "Settings saved successfully"
-msgstr "设置保存成功"
+msgid "Saved successfully"
+msgstr "保存成功"
 
-msgid "Save failed"
+msgid "Failed to save"
 msgstr "保存失败"
 
 msgid "Enable or disable the MAC filter feature."

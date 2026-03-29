@@ -183,6 +183,17 @@ msgstr "基本设置"
 msgid "Advance Settings"
 msgstr "高级设置"
 
+
+msgid "Logout"
+msgstr "退出登录"
+
+msgid "Normal Mode"
+msgstr "普通模式"
+
+msgid "Advanced Mode"
+msgstr "高级模式"
+
+
 msgid "Please close the modules that may conflict, such as acceleration, ad filtering, and multi-dial"
 msgstr "请先关闭加速、广告过滤、多拨等可能冲突的模块"
 
@@ -283,6 +294,12 @@ msgstr "输入规则名称"
 
 msgid "Enable Rule"
 msgstr "启用规则"
+
+msgid "Filter QUIC"
+msgstr "过滤QUIC协议"
+
+msgid "Some apps need QUIC disabled to take effect, such as taobao, youtube, etc. This may also affect other apps. Please choose this switch according to actual conditions."
+msgstr "少部分应用需要禁用QUIC协议才会有效果，比如taobao,youtube等，注意也可能影响其他应用，根据实际情况选择开关"
 
 msgid "Rule Mode"
 msgstr "规则模式"
@@ -419,8 +436,11 @@ msgstr "加载中..."
 msgid "LAN Interface"
 msgstr "LAN接口"
 
-msgid "Settings saved successfully"
-msgstr "设置保存成功"
+msgid "Saved successfully"
+msgstr "保存成功"
+
+msgid "Failed to save"
+msgstr "保存失败"
 
 msgid "Invalid LAN interface name"
 msgstr "无效的LAN接口名称"

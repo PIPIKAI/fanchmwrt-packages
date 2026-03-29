@@ -646,6 +646,7 @@ $(document).ready(function() {
     var _SelectApps = '<%:Select Apps%>';
     var _Cancel = '<%:Cancel%>';
     var _Save = '<%:Save%>';
+    var _FilterQUIC = '<%:Filter QUIC%>';
     var _Remove = '<%:Remove%>';
     var _SelectAll = '<%:Select All%>';
     var _Selected = '<%:Selected%>';
@@ -700,7 +701,7 @@ $(document).ready(function() {
     }
     
     function loadAllUsers() {
-        $.get('<%=url('admin/fwx/get_all_users')%>', {flag: 2, page: 0}, function(data) {
+        $.get("<%=url('admin/fwx/get_all_users')%>", {flag: 2, page: 0}, function(data) {
             if (data && data.data && Array.isArray(data.data.list)) {
                 allUsers = data.data.list;
                 console.log('Loaded users:', allUsers.length);
@@ -711,7 +712,7 @@ $(document).ready(function() {
     }
     
     function loadClassList() {
-        $.get('<%=url('admin/network/class_list')%>', function(data) {
+        $.get("<%=url('admin/network/class_list')%>", function(data) {
             if (data && data.class_list) {
                 classList = data.class_list;
             }
@@ -728,7 +729,7 @@ $(document).ready(function() {
     }
 
     function loadRules() {
-        $.get('<%=url('admin/network/get_filter_rules')%>', function(data) {
+        $.get("<%=url('admin/network/get_filter_rules')%>", function(data) {
             if (data && data.code === 0 && Array.isArray(data.data)) {
                 rules = data.data;
 
@@ -738,11 +739,18 @@ $(document).ready(function() {
                         rule.app_ids = [];
                     } else if (!rule.app_ids) {
                         rule.app_ids = [];
+                    } else {
+                        rule.app_ids = expandAppIds(rule.app_ids);
                     }
                     if (rule.time_rules && !Array.isArray(rule.time_rules)) {
                         rule.time_rules = [];
                     } else if (!rule.time_rules) {
                         rule.time_rules = [];
+                    }
+                    if (rule.filter_quic === undefined || rule.filter_quic === null || isNaN(parseInt(rule.filter_quic, 10))) {
+                        rule.filter_quic = 0;
+                    } else {
+                        rule.filter_quic = parseInt(rule.filter_quic, 10) ? 1 : 0;
                     }
                     return rule;
                 });
@@ -762,20 +770,82 @@ $(document).ready(function() {
             }
         });
     }
+
+    function expandAppIds(appIds) {
+        var result = [];
+        var seen = {};
+        (appIds || []).forEach(function(item) {
+            if (typeof item === 'number') {
+                if (!seen[item]) {
+                    seen[item] = true;
+                    result.push(item);
+                }
+                return;
+            }
+            var s = String(item || '').trim();
+            if (!s) return;
+            var m = s.match(/^(\d+)-(\d+)$/);
+            if (m) {
+                var start = parseInt(m[1], 10);
+                var end = parseInt(m[2], 10);
+                if (!isNaN(start) && !isNaN(end) && start > 0 && end >= start) {
+                    for (var i = start; i <= end; i++) {
+                        if (!seen[i]) {
+                            seen[i] = true;
+                            result.push(i);
+                        }
+                    }
+                }
+                return;
+            }
+            var v = parseInt(s, 10);
+            if (!isNaN(v) && v > 0 && !seen[v]) {
+                seen[v] = true;
+                result.push(v);
+            }
+        });
+        return result.sort(function(a, b) { return a - b; });
+    }
+
+    function compressAppIds(appIds) {
+        var ids = Array.from(new Set((appIds || []).map(function(v) {
+            return parseInt(v, 10);
+        }).filter(function(v) {
+            return !isNaN(v) && v > 0;
+        }))).sort(function(a, b) { return a - b; });
+
+        if (ids.length === 0) return [];
+        var out = [];
+        var start = ids[0], prev = ids[0];
+        for (var i = 1; i < ids.length; i++) {
+            var cur = ids[i];
+            if (cur === prev + 1) {
+                prev = cur;
+                continue;
+            }
+            out.push(start === prev ? String(start) : (start + '-' + prev));
+            start = prev = cur;
+        }
+        out.push(start === prev ? String(start) : (start + '-' + prev));
+        return out;
+    }
     
     function getAppCategoriesByRule(rule) {
         var categoryCount = {};
+        var normalizedAppIds = expandAppIds(rule && rule.app_ids ? rule.app_ids : []);
+        var appIdMap = {};
         
-        if (!rule.app_ids || rule.app_ids.length === 0) {
+        if (normalizedAppIds.length === 0) {
             return categoryCount;
         }
+        normalizedAppIds.forEach(function(id) { appIdMap[id] = true; });
         
         classList.forEach(function(category) {
             var count = 0;
             category.app_list.forEach(function(app) {
                 var parts = app.split(',');
-                var appId = parseInt(parts[0]);
-                if (rule.app_ids.indexOf(appId) !== -1) {
+                var appId = parseInt(parts[0], 10);
+                if (appIdMap[appId]) {
                     count++;
                 }
             });
@@ -1438,6 +1508,7 @@ $(document).ready(function() {
         $('#rule-enabled').prop('checked', enabledValue === 1);
         $('input[name="rule-mode"][value="' + rule.mode + '"]').prop('checked', true);
         onModeChange();
+        $('#rule-filter-quic').prop('checked', parseInt(rule.filter_quic || 0, 10) === 1);
         if (rule.mode === 2) {
             $('#rule-user').val(rule.user_mac);
         }
@@ -1489,7 +1560,7 @@ $(document).ready(function() {
         
         ruleId = parseInt(ruleId);
         
-        $.post('<%=url('admin/network/delete_filter_rule')%>', {rule_id: ruleId}, function(data) {
+        $.post("<%=url('admin/network/delete_filter_rule')%>", {rule_id: ruleId}, function(data) {
             if (data && data.code === 0) {
                 rules = rules.filter(function(r) { return r.id !== ruleId; });
                 renderRulesList();
@@ -1867,6 +1938,7 @@ $(document).ready(function() {
         }
         
         var enabled = $('#rule-enabled').is(':checked') ? 1 : 0;
+        var filterQuic = $('#rule-filter-quic').is(':checked') ? 1 : 0;
         
         var editingId = currentEditingRuleId;
         console.log('saveRule - STEP 1: editingId from global variable:', editingId, 'type:', typeof editingId);
@@ -1921,8 +1993,9 @@ $(document).ready(function() {
             user_mac: userMac,
             user_name: userName,
             time_rules: timeRules,
-            app_ids: appIds,
-            enabled: enabled
+            app_ids: compressAppIds(appIds),
+            enabled: enabled,
+            filter_quic: filterQuic
         };
         
         if (isEditMode) {
@@ -1932,7 +2005,7 @@ $(document).ready(function() {
             console.log('saveRule - STEP 4: NOT in edit mode, will create new rule');
         }
         
-        var url = isEditMode ? '<%=url('admin/network/update_filter_rule')%>' : '<%=url('admin/network/add_filter_rule')%>';
+        var url = isEditMode ? "<%=url('admin/network/update_filter_rule')%>" : "<%=url('admin/network/add_filter_rule')%>";
         
         console.log('saveRule - STEP 5: Final decision - editingId:', editingId, 'isEditMode:', isEditMode, 'url:', url);
         console.log('saveRule - STEP 6: ruleData:', JSON.stringify(ruleData, null, 2));
@@ -1942,8 +2015,11 @@ $(document).ready(function() {
                 if (editingId) {
                     var index = rules.findIndex(function(r) { return r.id === editingId; });
                     if (index !== -1) {
-                        ruleData.id = editingId;
-                        rules[index] = ruleData;
+                        var localRuleData = $.extend({}, ruleData, {
+                            id: editingId,
+                            app_ids: expandAppIds(ruleData.app_ids || [])
+                        });
+                        rules[index] = localRuleData;
                         renderRulesList(); // 编辑时直接渲染，无需重新获取
                     }
                 } else {
@@ -2005,6 +2081,7 @@ $(document).ready(function() {
         $('#rule-name').val('');
         
         $('#rule-enabled').prop('checked', true);
+        $('#rule-filter-quic').prop('checked', false);
         
         $('input[name="rule-mode"][value="1"]').prop('checked', true);
         $('input[name="rule-mode"][value="2"]').prop('checked', false);
@@ -2095,6 +2172,7 @@ $(document).ready(function() {
                 $form.removeData('editing-id');
                 currentEditingRuleId = null;
                 $('#rule-enabled').prop('checked', true);
+                $('#rule-filter-quic').prop('checked', false);
                 $('#user-selection-group').hide();
                 $('#rule-form-title').text(_AddRule);
             }
@@ -2160,6 +2238,16 @@ $(document).ready(function() {
                                 <input type="checkbox" id="rule-enabled" name="rule-enabled" checked>
                                 <span><%:Enable Rule%></span>
                             </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="rule-filter-quic" name="rule-filter-quic">
+                                <span><%:Filter QUIC%></span>
+                            </label>
+                            <div style="margin-top: 6px; color: #999; font-size: 12px; line-height: 1.5;">
+                                <%:Some apps need QUIC disabled to take effect, such as taobao, youtube, etc. This may also affect other apps. Please choose this switch according to actual conditions.%>
+                            </div>
                         </div>
                         
                         <div class="form-group">

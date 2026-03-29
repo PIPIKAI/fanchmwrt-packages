@@ -366,8 +366,8 @@ function set_app_filter_adv()
 	local resp_obj = utl.ubus("fwx", "common", req_obj)
 
 	if resp_obj and resp_obj.code == 2000 then
-		luci.http.write_json({code = 0, message = "Settings saved successfully"})
+		luci.http.write_json({code = 0, message = "Saved successfully"})
 	else
-		luci.http.write_json({code = 1, message = "Failed to save settings"})
+		luci.http.write_json({code = 1, message = "Failed to save"})
 	end
 end
