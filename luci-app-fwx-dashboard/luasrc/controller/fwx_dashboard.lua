@@ -6,6 +6,7 @@ function index()
 	
 	entry({"admin", "dashboard_api", "get_dashboard_common"}, call("get_dashboard_common")).leaf = true
 	entry({"admin", "dashboard_api", "get_daily_top_users"}, call("get_daily_top_users")).leaf = true
+	entry({"admin", "dashboard_api", "get_top_users"}, call("get_top_users")).leaf = true
 	entry({"admin", "dashboard_api", "get_active_users"}, call("get_active_users")).leaf = true
 	entry({"admin", "dashboard_api", "get_app_type_stats"}, call("get_app_type_stats")).leaf = true
 end
@@ -51,6 +52,38 @@ function get_daily_top_users()
 	else
 		luci.http.write_json({
 			date = 0,
+			total_count = 0,
+			users = {}
+		})
+	end
+end
+
+function get_top_users()
+	local json = require "luci.jsonc"
+	local utl = require "luci.util"
+
+	luci.http.prepare_content("application/json")
+
+	local valid_periods = {[1]=true, [3]=true, [7]=true, [30]=true}
+	local period = tonumber(luci.http.formvalue("period")) or 1
+	if not valid_periods[period] then
+		period = 1
+	end
+
+	local req_obj = {}
+	req_obj.api = "get_top_users"
+	req_obj.data = {
+		period = period,
+		limit = 8
+	}
+
+	local resp_obj = utl.ubus("fwx", "common", req_obj)
+
+	if resp_obj and resp_obj.code == 2000 and resp_obj.data then
+		luci.http.write_json(resp_obj.data)
+	else
+		luci.http.write_json({
+			period = period,
 			total_count = 0,
 			users = {}
 		})

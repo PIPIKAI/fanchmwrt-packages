@@ -528,7 +528,15 @@
                 <div id="pie-app" class="chart-container"></div>
             </div>
             <div class="card" id="bar-user-traffic-card">
-                <h3><%:User Traffic Top8%></h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0;"><%:User Traffic Top8%></h3>
+                    <div class="user-traffic-tabs" style="display:flex; gap:8px;">
+                        <button type="button" id="user-tab-1d" class="tab-btn user-traffic-tab-btn active" data-period="1"><%:1 Day%></button>
+                        <button type="button" id="user-tab-3d" class="tab-btn user-traffic-tab-btn" data-period="3"><%:3 Days%></button>
+                        <button type="button" id="user-tab-7d" class="tab-btn user-traffic-tab-btn" data-period="7"><%:7 Days%></button>
+                        <button type="button" id="user-tab-30d" class="tab-btn user-traffic-tab-btn" data-period="30"><%:30 Days%></button>
+                    </div>
+                </div>
                 <div id="bar-user-traffic" class="chart-container"></div>
             </div>
 
@@ -712,6 +720,10 @@
     var _LastHour = '<%:Last Hour%>';
     var _Today = '<%:Today%>';
     var _UserTrafficTop8 = '<%:User Traffic Top8%>';
+    var _1Day = '<%:1 Day%>';
+    var _3Days = '<%:3 Days%>';
+    var _7Days = '<%:7 Days%>';
+    var _30Days = '<%:30 Days%>';
     var _ActiveTerminalsTop8 = '<%:Active Terminals Top8%>';
     var _Name = '<%:Name%>';
     var _IP = '<%:IP%>';
@@ -845,16 +857,7 @@
             return;
         }
         
-        new XHR().get('<%=url("admin/dashboard_api/get_daily_top_users")%>', null, function(x, data){
-            if(data){
-                try {
-                    var json = typeof data === 'string' ? JSON.parse(data) : data;
-                    updateUserTrafficChart(json);
-                } catch(e) {
-                    console.error('Failed to parse user traffic data:', e);
-                }
-            }
-        });
+        fetchUserTrafficByPeriod(currentUserTrafficPeriod);
         
         new XHR().get('<%=url("admin/dashboard_api/get_active_users")%>?count=8', null, function(x, data){
             if(data){
@@ -1188,6 +1191,30 @@
         '#10b981'   // emerald-500 
     ];
     
+    var currentUserTrafficPeriod = 1;
+    var userTrafficCache = {};
+
+    function fetchUserTrafficByPeriod(period) {
+        if (userTrafficCache[period]) {
+            updateUserTrafficChart(userTrafficCache[period]);
+            return;
+        }
+        var url = '<%=url("admin/dashboard_api/get_top_users")%>?period=' + period;
+        new XHR().get(url, null, function(x, data) {
+            if (data) {
+                try {
+                    var json = typeof data === 'string' ? JSON.parse(data) : data;
+                    userTrafficCache[period] = json;
+                    if (currentUserTrafficPeriod === period) {
+                        updateUserTrafficChart(json);
+                    }
+                } catch(e) {
+                    console.error('Failed to parse user traffic data:', e);
+                }
+            }
+        });
+    }
+
     var currentAppStatsType = 'daily';
     
     var appStatsData = {
@@ -1309,7 +1336,7 @@
         });
     }
     
-    $('.tab-btn').on('click', function(e) {
+    $('.app-stats-tabs .tab-btn').on('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
@@ -1320,7 +1347,7 @@
             return;
         }
         
-        $('.tab-btn').removeClass('active');
+        $('.app-stats-tabs .tab-btn').removeClass('active');
         $btn.addClass('active');
         
         currentAppStatsType = type;
@@ -1330,6 +1357,26 @@
         } else {
             fetchAppTypeStats(type);
         }
+    });
+
+    $('.user-traffic-tabs .tab-btn').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $btn = $(this);
+        var period = parseInt($btn.data('period'), 10);
+
+        if ($btn.hasClass('active')) {
+            return;
+        }
+
+        $('.user-traffic-tabs .tab-btn').removeClass('active');
+        $btn.addClass('active');
+
+        currentUserTrafficPeriod = period;
+        userTrafficCache = {};
+
+        fetchUserTrafficByPeriod(period);
     });
     
 
