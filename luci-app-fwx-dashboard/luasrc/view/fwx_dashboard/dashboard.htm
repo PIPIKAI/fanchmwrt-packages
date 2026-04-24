@@ -464,6 +464,32 @@
             font-size: 12px;
         }
     }
+
+    /* 隐私保护的模糊样式 */
+    .privacy-hidden div[id$="-value"] {
+        filter: blur(4px);
+        opacity: 0.6;
+        user-select: none;
+        transition: filter 0.3s, opacity 0.3s; /* 平滑过渡效果 */
+    }
+    /* 隐藏状态下，鼠标悬浮可临时查看 */
+    .privacy-hidden div[id$="-value"]:hover {
+        filter: blur(0px);
+        opacity: 1;
+    }
+    
+    /* 小眼睛按钮样式 */
+    #toggle-ip-btn {
+        cursor: pointer;
+        margin-left: 8px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        transition: color 0.2s;
+    }
+    #toggle-ip-btn:hover {
+        color: #000;
+    }
 </style>
 
 <div class="dash">
@@ -571,9 +597,28 @@
             </div>
         </div>
         <div class="mini" style="position:relative;">
-            <div style="font-weight:600; margin-bottom:6px; position:relative; cursor:help;" id="network-title"><%:Network%></div>
+            <!-- 在标题旁边添加小眼睛图标 -->
+            <div style="font-weight:600; margin-bottom:6px; position:relative; display: flex; align-items: center;" id="network-title">
+                <span style="cursor:help;"><%:Network%></span>
+                <span id="toggle-ip-btn" onclick="toggleIpPrivacy()" title="显示/隐藏 IP信息">
+                    <!-- 闭眼图标 (表示隐藏状态) -->
+                    <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755l.191.195z"/>
+                        <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
+                        <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
+                    </svg>
+                    <!-- 睁眼图标 (表示显示状态)，默认不显示 -->
+                    <svg id="icon-eye-open" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                    </svg>
+                </span>
+            </div>
+            
             <div id="network-tooltip" class="tooltip tooltip-top tooltip-arrow-left" style="display:none;"></div>
-            <div class="kv" id="network-info">
+            
+            <!-- 默认加上 privacy-hidden 类来隐藏 IP -->
+            <div class="kv privacy-hidden" id="network-info">
                 <div id="gw-mode-lan-ip-label">LAN IP</div><div id="gw-mode-lan-ip-value">192.168.1.1</div>
                 <div id="gw-mode-lan-ipv6-label" style="display:none;">LAN IPv6</div><div id="gw-mode-lan-ipv6-value" style="display:none;">-</div>
                 <div id="gw-mode-wan-ip-label">WAN IP</div><div id="gw-mode-wan-ip-value">100.64.1.23</div>
@@ -2524,5 +2569,22 @@
         });
     }
 
+    function toggleIpPrivacy() {
+        var info = document.getElementById('network-info');
+        var openEye = document.getElementById('icon-eye-open');
+        var closedEye = document.getElementById('icon-eye-closed');
+        
+        if (info.classList.contains('privacy-hidden')) {
+            // 切换为显示状态
+            info.classList.remove('privacy-hidden');
+            openEye.style.display = 'block';
+            closedEye.style.display = 'none';
+        } else {
+            // 切换为隐藏状态
+            info.classList.add('privacy-hidden');
+            openEye.style.display = 'none';
+            closedEye.style.display = 'block';
+        }
+    }
 
 //]]></script>
