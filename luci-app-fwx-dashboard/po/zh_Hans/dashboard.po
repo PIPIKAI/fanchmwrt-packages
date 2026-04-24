@@ -52,6 +52,18 @@ msgstr "近1小时"
 msgid "Today"
 msgstr "今日"
 
+msgid "1 Day"
+msgstr "今日"
+
+msgid "3 Days"
+msgstr "近3天"
+
+msgid "7 Days"
+msgstr "近7天"
+
+msgid "30 Days"
+msgstr "近30天"
+
 msgid "User Traffic Top8"
 msgstr "用户流量Top8"
 
